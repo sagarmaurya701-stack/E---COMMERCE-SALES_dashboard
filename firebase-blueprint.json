@@ -1,0 +1,60 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Registered user profile and role assignment",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Auth UID" },
+        "email": { "type": "string", "format": "email", "description": "User email address" },
+        "displayName": { "type": "string", "maxLength": 100, "description": "User display name" },
+        "role": { "type": "string", "enum": ["executive", "lead_analyst", "viewer"], "description": "Access control role" },
+        "createdAt": { "type": "string", "description": "Account creation timestamp" },
+        "lastLoginAt": { "type": "string", "description": "Last login timestamp" }
+      },
+      "required": ["userId", "email", "role"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Security and compliance audit trail log for data operations",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique log entry ID" },
+        "userId": { "type": "string", "description": "UID of the actor" },
+        "userEmail": { "type": "string", "format": "email", "description": "Email of actor" },
+        "action": { "type": "string", "maxLength": 100, "description": "Action performed" },
+        "details": { "type": "string", "maxLength": 500, "description": "Action metadata" },
+        "timestamp": { "type": "string", "description": "ISO timestamp" }
+      },
+      "required": ["id", "userId", "action", "timestamp"]
+    },
+    "SavedReport": {
+      "title": "SavedReport",
+      "description": "User saved analytics snapshot or bookmark",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Report ID" },
+        "userId": { "type": "string", "description": "Owner UID" },
+        "title": { "type": "string", "maxLength": 120, "description": "Report title" },
+        "notes": { "type": "string", "maxLength": 1000, "description": "Analyst notes" },
+        "filters": { "type": "string", "maxLength": 2000, "description": "Serialized filter state" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" }
+      },
+      "required": ["id", "userId", "title"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Stores user access control and settings"
+    },
+    "/auditLogs/{logId}": {
+      "schema": "AuditLog",
+      "description": "Stores tamper-evident operation logs"
+    },
+    "/savedReports/{reportId}": {
+      "schema": "SavedReport",
+      "description": "Stores saved executive dashboards and bookmarked slices"
+    }
+  }
+}

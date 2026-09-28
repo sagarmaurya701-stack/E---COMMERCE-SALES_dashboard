@@ -1,0 +1,6 @@
+{
+  "name": "E-Commerce Sales Performance & Analytics Studio",
+  "description": "Interactive Power BI & Power Query analytics platform for e-commerce sales performance, transaction data cleaning pipeline, DAX measures, executive dashboards, and category underperformance analysis with secure Firebase authentication.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

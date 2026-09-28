@@ -1,0 +1,63 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Connection testing doc
+    match /test/connection {
+      allow get: if true;
+    }
+
+    // User profiles & RBAC
+    match /users/{userId} {
+      allow get: if isValidId(userId) && isOwner(userId);
+      allow create: if isValidId(userId) && isOwner(userId) 
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.email is string
+        && request.resource.data.role in ['executive', 'lead_analyst', 'viewer'];
+      allow update: if isValidId(userId) && isOwner(userId)
+        && request.resource.data.userId == resource.data.userId;
+      allow delete: if false;
+    }
+
+    // Tamper-evident Audit Logs
+    match /auditLogs/{logId} {
+      allow get, list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isValidId(logId) && isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.action is string
+        && request.resource.data.action.size() <= 100;
+      allow update, delete: if false;
+    }
+
+    // Saved Reports & Dashboards
+    match /savedReports/{reportId} {
+      allow get, list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isValidId(reportId) && isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.title is string
+        && request.resource.data.title.size() <= 120;
+      allow update: if isValidId(reportId) && isSignedIn()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == request.auth.uid;
+      allow delete: if isValidId(reportId) && isSignedIn()
+        && resource.data.userId == request.auth.uid;
+    }
+  }
+}
